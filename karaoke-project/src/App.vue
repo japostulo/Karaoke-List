@@ -1,15 +1,15 @@
 <template>
   <div id="app">
-    <Lista/>
+    <lista-tag/>
   </div>
 </template>
 
 <script>
-import Lista from './components/lista.vue'
+// import Lista from './components/lista.vue'
 export default {
   name: 'App',
   components: {
-    Lista,
+    // 'lista-a':Lista,
   }
 }
 </script>
