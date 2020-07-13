@@ -1,90 +1,97 @@
 <template>
   <div id="app">
     <div class="container">
-      <table class="table table-bordered table-dark">
-          <tr>
-            <td>Cantor</td>
-            <td>Numero</td>
-            <td>Música</td>
-          </tr>
-          <tr v-for="(musica,index) in musicas" :key="index">
-            <td>{{musica.Musica}}</td>
-            <td>{{index}}</td>
-            <td>{{musica.inicio}}</td>
-          </tr>
-        </table>
+      <div class="row">
+        <div class="col">
+          <img src="./Logo.png" alt="">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+            <input class="form-control form-control-lg" id="pesquisar" placeholder="Digite sua música ou cantor">
+        </div>
+      </div>
+      <div class="row mt-4">
+        <div class="col d-flex justify-content-end">
+          <span><input type="radio" checked name="gender" id="cantor"><label for="cantor">Cantor</label></span>
+        </div>
+        <div class="col d-flex align-content-start">
+          <span><input type="radio" name="gender" id="titulo"><label for="titulo">Musica</label></span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <button class="btn btn-outline-success my-2 my-sm-0" @click="search()">PESQUISAR</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+            <h3>{{title}}</h3>
+            <table class="table table-bordered table-dark">
+              <tr>
+                <td>Cantor</td>
+                <td>Musica</td>
+                <td>Código</td>
+              </tr>
+              <tr v-for="(musica,index) in musicas" :key="index">
+                <td>{{musica.cantor}}</td>
+                <td>{{musica.titulo}}</td>
+                <td>{{musica.cod}}</td>
+              </tr>
+            </table>
+        </div>
+      </div>
     </div>
    
   </div>
 </template>
 
 <script>
-// import music from './musicas.js'
+var response=[];
 export default {
   data() {
     return{
-      musicas:{
-        '18483': {
-        Artista: "19",
-        Musica: "Ano Kami Hikohki Kumorizora Watte",
-        inicio: "Genki Desu Ka Kimi Wa Ima Mo",
-        }, 
-        '59463' : {
-        Artista: "112",
-        Musica: "Only You",
-        inicio: "",
-        }, '06549' : {
-        Artista: "365",
-        Musica: "São Paulo",
-        inicio: "Tem Dias Que Eu Digo Não Invento No Meu",
-        }, '50001' : {
-        Artista: "1 Kilo",
-        Musica: "Deixe Me Ir",
-        inicio: "",
-        }, '59461' : {
-        Artista: "10 Years",
-        Musica: "Wasteland",
-        inicio: "",
-        }, '04920' : {
-        Artista: "10Cc",
-        Musica: "I'M Not In Love",
-        inicio: "I'M Not In Love So Don'T Forget It",
-        }, '59462' : {
-        Artista: "10Cc",
-        Musica: "Donna",
-        inicio: "",
-        }, '01039' : {
-        Artista: "14 Bis",
-        Musica: "Bola De Meia Bola De Gude",
-        inicio: "Há Um Menino Há Um Moleque",
-        }, '03755' : {
-        Artista: "14 Bis",
-        Musica: "Linda Juventude",
-        inicio: "Zabelê, Zumbi, Besouro Vespa Fabricando",
-        }, '06074' : {
-        Artista: "14 Bis",
-        Musica: "Planeta Sonho",
-        inicio: "Aqui Ninguém Mais Ficará De...",
-        }, '06197' : {
-        Artista: "14 Bis",
-        Musica: "Todo Azul Do Mar",
-        inicio: "Foi Assim Como Ver O Mar A ...",
-        }, '07392' : {
-        Artista: "14 Bis",
-        Musica: "Natural",
-        inicio: "Penso Em Você No Seu Jeito De",
-        }
-      },
+      musicas:[],
+      searchArray:[],
+      version:'',
+      tableSearch:false,
+      val:5,
+      title:'',
     }
   },
   methods:{
-
+    async bdMusicas(){
+      response = await fetch('./bd.json',{method:'GET'}).then((resp)=>{ 
+        return resp.json();
+      });
+    },
+    search(){
+      let input = document.getElementById("pesquisar").value;
+      this.filterItem(input);
+    },
+    filterItem(query){
+      if(document.getElementById('cantor').checked){
+        //normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        this.musicas = response.data.filter(el => el.cantor.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').indexOf(query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')) > -1);
+        this.title=`Cantores que contém "${document.getElementById("pesquisar").value}"`
+      }else{
+        this.musicas = response.data.filter(el => el.titulo.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').indexOf(query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')) > -1);
+        this.title=`Musicas que contém "${document.getElementById("pesquisar").value}"`
+      }
+    },
+  },
+  created: function(){
+    this.bdMusicas();
   }
 }
-// console.log(music);
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-
+img{
+  width:30%;
+}
+ul{
+  list-style:none;
+}
 </style>

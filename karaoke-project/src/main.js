@@ -9,4 +9,8 @@ Vue.config.productionTip = false
 
 new Vue({
   render: h => h(App),
+  beforeMount: function(){
+    console.log("MONTOU")
+    this.musicas="FOI MONTADO";
+  }
 }).$mount('#app')
