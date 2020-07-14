@@ -3,12 +3,12 @@
     <div class="container">
       <div class="row">
         <div class="col">
-          <img src="./Logo.png" alt="">
+          <img src="@/Logo.png" alt="">
         </div>
       </div>
       <div class="row">
         <div class="col">
-            <input class="form-control form-control-lg" id="pesquisar" placeholder="Digite sua música ou cantor">
+            <input class="form-control form-control-lg" id="pesquisar" @keyup.enter="search" placeholder="Digite sua música ou cantor"/>
         </div>
       </div>
       <div class="row mt-4">
@@ -27,7 +27,7 @@
       <div class="row">
         <div class="col">
             <h3>{{title}}</h3>
-            <table class="table table-bordered table-dark">
+            <table class="table table-bordered table-hover table-dark">
               <tr>
                 <td>Cantor</td>
                 <td>Musica</td>
@@ -47,41 +47,52 @@
 </template>
 
 <script>
+// import autoComplete from "./autoComplete";
 var response=[];
 export default {
   data() {
     return{
       musicas:[],
-      searchArray:[],
       version:'',
-      tableSearch:false,
-      val:5,
       title:'',
     }
   },
   methods:{
-    async bdMusicas(){
-      response = await fetch('./bd.json',{method:'GET'}).then((resp)=>{ 
+    async bdCatalogo(){
+      if(localStorage.bdCatalogo == undefined){
+        let pesquisa = await fetch('./bd.json',{method:'GET'}).then((resp)=>{ 
         return resp.json();
-      });
+        });
+        localStorage.bdCatalogo = JSON.stringify(pesquisa);
+      }
+       response = JSON.parse(localStorage.bdCatalogo);
+      
     },
     search(){
-      let input = document.getElementById("pesquisar").value;
-      this.filterItem(input);
+      let input = this.normalizeString(document.getElementById("pesquisar").value);
+      this.filterItem(input, 'cantor');
     },
     filterItem(query){
+      let tipo = 'Músicas'
       if(document.getElementById('cantor').checked){
-        //normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        this.musicas = response.data.filter(el => el.cantor.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').indexOf(query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')) > -1);
-        this.title=`Cantores que contém "${document.getElementById("pesquisar").value}"`
-      }else{
-        this.musicas = response.data.filter(el => el.titulo.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').indexOf(query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')) > -1);
-        this.title=`Musicas que contém "${document.getElementById("pesquisar").value}"`
+        tipo = 'Cantor'
+        this.musicas = response.data.filter(el => this.normalizeString(el.cantor).indexOf(query) > -1);
+      
       }
+      else
+        this.musicas = response.data.filter(el => this.normalizeString(el.titulo).indexOf(query) > -1);
+
+      if(this.musicas.length>0)
+      this.title=`${tipo} que contém "${document.getElementById("pesquisar").value}"`
+      else
+      this.title=`Infelizmente não achamos nada referente a "${document.getElementById("pesquisar").value}"`
     },
+    normalizeString(value){
+      return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    }
   },
   created: function(){
-    this.bdMusicas();
+    this.bdCatalogo();
   }
 }
 </script>
@@ -89,7 +100,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 img{
-  width:30%;
+  width:40%;
 }
 ul{
   list-style:none;
